@@ -1,0 +1,64 @@
+# =============================================
+# Estilo base (puedes elegir uno de los principales)
+# =============================================
+BasedOnStyle: Google  # Alternativas: LLVM, Google, Chromium, Mozilla, WebKit, GNU, Microsoft
+
+# =============================================
+# Opciones de indentación y espacios
+# =============================================
+IndentWidth: 4       # Número de espacios por indentación
+TabWidth: 4          # Tamaño del tabulador (en espacios)
+UseTab: Never        # Nunca usar tabs. Alternativas: Always, ForIndentation, ForContinuation
+AccessModifierOffset: -1  # Espacio antes de 'public:', 'private:', etc. (-1 = alineado con indentación)
+
+# =============================================
+# Llaves (braces) y bloques
+# =============================================
+BreakBeforeBraces: Attach  # Estilo de llaves. Alternativas: Attach, Linux, Stroustrup, etc.
+# Ejemplo con Allman:
+# if (condition)
+# {
+#     code();
+# }
+
+AllowShortIfStatementsOnASingleLine: false  # Evita: if (x) return; en una línea
+AllowShortLoopsOnASingleLine: false         # Evita: while (x) x--; en una línea
+
+# =============================================
+# Switch y casos
+# =============================================
+IndentCaseLabels: true  # Indenta los 'case' dentro del switch
+# Ejemplo:
+# switch (var) {
+#     case 1:
+#         break;
+#     default:
+#         break;
+# }
+
+# =============================================
+# Línea máxima y ajuste
+# =============================================
+ColumnLimit: 80     # Máximo de caracteres por línea antes de hacer wrap
+BinPackArguments: true  # No amontonar argumentos en una línea si se pasa el límite
+# Ejemplo:
+# void myFunction(
+#     int arg1, 
+#     int arg2, 
+#     int arg3
+# );
+
+# =============================================
+# Espacios y alineación
+# =============================================
+AlignAfterOpenBracket: Align  # Alinea después de un paréntesis abierto
+SpaceBeforeParens: ControlStatements  # Espacio antes de paréntesis solo en 'if', 'for', etc.
+# Ejemplo:
+# if (condition) { ... }
+# pero: myFunction(argument);
+
+# =============================================
+# Punteros y referencias
+# =============================================
+PointerAlignment: Right  # Estilo de punteros: int* ptr; Alternativa: Right (int *ptr)
+ReferenceAlignment: Right  # Estilo de referencias: int& ref; Alternativa: Right (int &ref)
