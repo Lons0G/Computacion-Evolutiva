@@ -1,130 +1,124 @@
+#include <fstream>
 #include <iostream>
-#include <vector>
+#include <string>
 
+#include "F5DeJong.hpp"
+#include "cruza.hpp"
 #include "individuo.hpp"
-
-void printIndividual(const Individual& ind, const std::string& name) {
-    std::cout << "\n=== " << name << " ===\n";
-    std::cout << "Cromosoma: " << ind.getChromosome() << "\n";
-    std::cout << "Fitness: " << ind.getFitness() << "\n";
-    std::cout << "Mutado: " << (ind.isMutated() ? "Sí" : "No") << "\n";
-
-    const auto& vars = ind.getVariables();
-    std::cout << "Variables decodificadas:\n";
-    for (size_t i = 0; i < vars.size(); ++i) {
-        std::cout << "x" << i << " = " << vars[i] << "\n";
-    }
-}
-
-void testBasicFunctionality() {
-    std::cout << "\n***** TEST FUNCIONALIDAD BÁSICA *****\n";
-
-    // Configuración de decodificación (3 variables entre -5 y 5, 8 bits cada
-    // una)
-    Individual::setDecoding(-5.0, 5.0, 3, 8);
-
-    // Crear individuo con cromosoma específico
-    Individual ind1("001011011101100001100010");
-    ind1.setFitness(0.85);
-    ind1.setMutated(true);
-
-    printIndividual(ind1, "Individuo 1");
-
-    // Verificar longitud
-    std::cout << "\nLongitud cromosoma: " << ind1.size() << " bits\n";
-    std::cout << "Bit en posición 5: " << ind1.getBit(5) << "\n";
-
-    // Modificar bits
-    std::cout << "\nAntes de flipBit(3): " << ind1.getChromosome();
-    ind1.flipBit(3);
-    std::cout << "\nDespués de flipBit(3): " << ind1.getChromosome() << "\n";
-}
-
-void testParentRelationship() {
-    std::cout << "\n***** TEST RELACIONES PADRE-HIJO *****\n";
-
-    // Configuración
-    Individual::setDecoding(-10.0, 10.0, 2, 10);
-
-    // Crear padres
-    auto parent1 = std::make_shared<Individual>("11110000001111000000");
-    auto parent2 = std::make_shared<Individual>("00001111110000111111");
-
-    parent1->setFitness(0.9);
-    parent2->setFitness(0.8);
-
-    // Crear hijo
-    auto child = std::make_shared<Individual>("11001100110011001100");
-    child->setParents(parent1, parent2);
-    child->setFitness(0.95);
-    child->setMutated(false);
-
-    printIndividual(*parent1, "Padre 1");
-    printIndividual(*parent2, "Padre 2");
-    printIndividual(*child, "Hijo");
-
-    // Verificar relaciones
-    std::cout << "\nPadre1 del hijo: " << child->getParent1()->getChromosome()
-              << "\n";
-    std::cout << "Padre2 del hijo: " << child->getParent2()->getChromosome()
-              << "\n";
-}
-
-void testRandomGeneration() {
-    std::cout << "\n***** TEST GENERACIÓN ALEATORIA *****\n";
-
-    // Configuración (2 variables entre 0 y 100, 16 bits cada una)
-    Individual::setDecoding(0.0, 100.0, 2, 16);
-
-    // Crear individuo aleatorio
-    Individual ind(32);  // 2 variables * 16 bits
-
-    printIndividual(ind, "Individuo Aleatorio");
-
-    // Verificar valores decodificados están en rango
-    const auto& vars = ind.getVariables();
-    for (size_t i = 0; i < vars.size(); ++i) {
-        std::cout << "\nVariable " << i << " en rango [0, 100]? ";
-        std::cout << (vars[i] >= 0.0 && vars[i] <= 100.0 ? "Sí" : "No");
-        std::cout << " (" << vars[i] << ")";
-    }
-}
-
-void testEdgeCases() {
-    std::cout << "\n\n***** TEST CASOS LÍMITE *****\n";
-
-    try {
-        // Cromosoma vacío
-        Individual ind("");
-        printIndividual(ind, "Cromosoma Vacío");
-    } catch (const std::exception& e) {
-        std::cout << "Error esperado: " << e.what() << "\n";
-    }
-
-    // Configuración sin inicializar
-    Individual::setDecoding(0, 0, 0, 0);  // Reset
-    try {
-        Individual ind("01");
-        ind.decode();  // Debe fallar
-    } catch (const std::exception& e) {
-        std::cout << "Error esperado (parámetros no configurados): " << e.what()
-                  << "\n";
-    }
-
-    // Configuración válida
-    Individual::setDecoding(-1.0, 1.0, 1, 2);
-    Individual ind("11");  // Valor máximo
-    printIndividual(ind, "Valor Máximo (1.0)");
-}
+#include "mutacion.hpp"
+#include "poblacion.hpp"
+#include "seleccion.hpp"
 
 int main() {
-    std::cout << "=== PRUEBAS UNITARIAS PARA LA CLASE INDIVIDUAL ===\n";
+    // Parámetros interactivos
+    int POP_SIZE, MAX_GENERATIONS, SEED;
+    double CROSS_PROB, MUT_RATE;
+    std::string outputFilename;
 
-    testBasicFunctionality();
-    testParentRelationship();
-    testRandomGeneration();
-    testEdgeCases();
+    std::cout << "Ingrese el tamaño de la población: ";
+    std::cin >> POP_SIZE;
+    std::cout << "Ingrese el porcentaje de cruza (0-1): ";
+    std::cin >> CROSS_PROB;
+    std::cout << "Ingrese el porcentaje de mutación (0-1): ";
+    std::cin >> MUT_RATE;
+    std::cout << "Ingrese el número máximo de generaciones: ";
+    std::cin >> MAX_GENERATIONS;
+    std::cout << "Ingrese un numero entero para la semilla: ";
+    std::cin >> SEED;
+    std::cout << "Ingrese el nombre del archivo de salida: ";
+    std::cin >> outputFilename;
 
-    std::cout << "\n\n=== TODAS LAS PRUEBAS COMPLETADAS ===" << std::endl;
+    std::ofstream logFile(outputFilename);
+    std::ofstream eliteFile("elite_log.csv");
+
+    const int DIM = 2;
+    const int BITS_PER_VAR = 17;
+
+    Individual::setSeed(SEED);
+    UniformCrossover::setSeed(SEED);
+    UniformMutation::setSeed(SEED);
+    Individual::setDecoding(-65.536, 65.536, DIM, BITS_PER_VAR, Individual::Encoding::GRAY);
+
+    auto crossover = CrossoverFactory::create(CrossoverFactory::Type::UNIFORM, CROSS_PROB, 0.5);
+    auto mutator = MutationFactory::create(MutationFactory::Type::UNIFORME, MUT_RATE);
+    Universal_Estocastica susSelector;
+
+    Population population(POP_SIZE, DIM * BITS_PER_VAR, Individual::Encoding::GRAY);
+
+    for (int i = 0; i < population.size(); ++i) {
+        auto ind = population.getIndividual(i);
+        ind->decode();
+        double fx = DeJong::F5::evaluate(ind->getVariables());
+        ind->setFitness(1.0 / (1.0 + fx));
+    }
+
+    Individual bestGlobal = *population.getFittest();
+
+    logFile << "Generación,Media,Mejor,Peor,Cruzas,Mutaciones,Mejor_FX,Variables\n";
+    eliteFile << "Generación,Fx,Var1,Var2\n";
+
+    for (int gen = 1; gen <= MAX_GENERATIONS; ++gen) {
+        auto elite = population.getFittest();
+        Population newPopulation;
+        auto selected = susSelector.selectMany(population, POP_SIZE);
+
+        int crosses = 0;
+        int mutations = 0;
+
+        for (size_t i = 0; i + 1 < selected.size(); i += 2) {
+            auto [h1, h2] = crossover->crossover(selected[i], selected[i + 1]);
+            ++crosses;
+
+            mutator->mutate(h1);
+            mutations++;
+            mutator->mutate(h2);
+            mutations++;
+
+            h1->decode();
+            double fx1 = DeJong::F5::evaluate(h1->getVariables());
+            h1->setFitness(1.0 / (1.0 + fx1));
+
+            h2->decode();
+            double fx2 = DeJong::F5::evaluate(h2->getVariables());
+            h2->setFitness(1.0 / (1.0 + fx2));
+
+            newPopulation.addIndividual(h1);
+            if (newPopulation.size() < POP_SIZE)
+                newPopulation.addIndividual(h2);
+        }
+
+        newPopulation.Replace(elite);
+        population = newPopulation;
+
+        double avg = population.getAverageFitness();
+        double min = population.getWorstFitness();
+        double max = population.getFittest()->getFitness();
+
+        auto bestGen = population.getFittest();
+        double fxBest = DeJong::F5::evaluate(bestGen->getVariables());
+        if (bestGen->getFitness() > bestGlobal.getFitness()) {
+            bestGlobal = *bestGen;
+        }
+
+        logFile << gen << "," << avg << "," << max << "," << min << "," << crosses << ","
+                << mutations << "," << fxBest << ",";
+        for (double v : bestGen->getVariables())
+            logFile << v << " ";
+        logFile << "\n";
+
+        eliteFile << gen << "," << fxBest << "," << bestGen->getVariables()[0] << ","
+                  << bestGen->getVariables()[1] << "\n";
+
+        // std::cout << "Generación " << gen << ": ";
+        // DeJong::F5::printFxWithVariables(bestGen->getVariables());
+    }
+
+    std::cout << "\n=== MEJOR INDIVIDUO GLOBAL ===\n";
+    bestGlobal.printIndividual();
+    std::cout << "Evaluación F5 del mejor individuo global: ";
+    DeJong::F5::printFxWithVariables(bestGlobal.getVariables());
+
+    logFile.close();
+    eliteFile.close();
     return 0;
 }
