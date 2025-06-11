@@ -39,7 +39,7 @@ IndentCaseLabels: true  # Indenta los 'case' dentro del switch
 # =============================================
 # Línea máxima y ajuste
 # =============================================
-ColumnLimit: 80     # Máximo de caracteres por línea antes de hacer wrap
+ColumnLimit: 100     # Máximo de caracteres por línea antes de hacer wrap
 BinPackArguments: true  # No amontonar argumentos en una línea si se pasa el límite
 # Ejemplo:
 # void myFunction(
