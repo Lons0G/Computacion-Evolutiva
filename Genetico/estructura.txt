@@ -1,0 +1,26 @@
+genetic_algorithm/
+<TERMINADO Y PROBADO>
+├── individual.hpp      # Declaración de la clase Individual
+├── individual.cpp      # Implementación de Individual
+
+<TERMINADO Y PROBADO>
+├── population.hpp      # Declaración de la clase Population
+├── population.cpp      # Implementación de Population
+
+<TERMINADO Y PROBADO>
+├── selection.hpp       # Operadores de selección
+├── selection.cpp
+
+<TERMINADO Y PROBADO>
+├── crossover.hpp       # Operadores de cruce
+├── crossover.cpp
+
+<TERMINADO Y PROBADO>
+├── mutation.hpp        # Operadores de mutación
+├── mutation.cpp
+
+<SIGUIENTE>
+├── fitness.hpp         # Función objetivo/adaptación
+├── fitness.cpp
+
+└── main.cpp            # Punto de entrada del programa

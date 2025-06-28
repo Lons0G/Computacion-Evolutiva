@@ -15,7 +15,7 @@ UniformCrossover::UniformCrossover(double crossoverProb, double crossoverGenProb
     : _crossoverProb(crossoverProb), _crossoverGenProb(crossoverGenProb) {
     if (crossoverProb < 0.0 || crossoverProb > 1.0 || crossoverGenProb < 0.0 ||
         crossoverGenProb > 1.0) {
-        throw std::invalid_argument("Probabilidad de cruza fuera del rango [0, 1]");
+        throw std::invalid_argument("PARAMETROS DE PROBABILIDADES FUERA DEL RANGO [0, 1]");
     }
 }
 
@@ -23,7 +23,7 @@ UniformCrossover::UniformCrossover(double crossoverProb, double crossoverGenProb
 std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>> UniformCrossover::crossover(
     const std::shared_ptr<Individual>& parent1, const std::shared_ptr<Individual>& parent2) const {
     if (parent1->size() != parent2->size()) {
-        throw std::invalid_argument("Los padres deben tener la misma longitud del cromosoma");
+        throw std::invalid_argument("NO COINCIDEN LA LONGUITUDES DE LOS CROMOSOMAS DE LOS PADRES");
     }
 
     std::uniform_real_distribution<double> dist(0.0, 1.0);
@@ -43,11 +43,6 @@ std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>> UniformCross
         std::string p1 = parent1->getChromosome();
         std::string p2 = parent2->getChromosome();
 
-        // if (enc == Individual::Encoding::GRAY) {
-        //     p1 = Individual::GrayToBin(p1);
-        //     p2 = Individual::GrayToBin(p2);
-        // }
-
         std::string child1, child2;
         child1.reserve(p1.size());
         child2.reserve(p1.size());
@@ -61,11 +56,6 @@ std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>> UniformCross
                 child2 += p1[i];
             }
         }
-
-        // if (enc == Individual::Encoding::GRAY) {
-        //     child1 = Individual::BinToGray(child1);
-        //     child2 = Individual::BinToGray(child2);
-        // }
 
         auto offspring1 = std::make_shared<Individual>(child1, enc);
         auto offspring2 = std::make_shared<Individual>(child2, enc);
@@ -90,6 +80,7 @@ std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>> UniformCross
             }
         }
 
+        // CREA A LOS HIJOS Y LOS RETORNA
         auto offspring1 = std::make_shared<Individual>(child1, enc);
         auto offspring2 = std::make_shared<Individual>(child2, enc);
         offspring1->setParents(parent1, parent2);
@@ -97,7 +88,7 @@ std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>> UniformCross
         return {offspring1, offspring2};
     }
 
-    throw std::runtime_error("Codificación no soportada en cruzamiento");
+    throw std::runtime_error("SE DESCONOCE LA CODIFICACION");
 }
 
 // PATRON FACTORY DE LA CRUZA
@@ -107,6 +98,6 @@ std::unique_ptr<ICrossoverOperator> CrossoverFactory::create(Type type, double c
         case Type::UNIFORM:
             return std::make_unique<UniformCrossover>(crossoverProb, crossoverGenProb);
         default:
-            throw std::invalid_argument("Tipo de Cruza desconocido");
+            throw std::invalid_argument("TIPO DE CRUZA DESCONOCIDO");
     }
 }

@@ -10,7 +10,7 @@
 #include "seleccion.hpp"
 
 int main() {
-    // Parámetros interactivos
+    // PARAMETROS
     int POP_SIZE, MAX_GENERATIONS, SEED;
     double CROSS_PROB, MUT_RATE;
     std::string outputFilename;
@@ -28,9 +28,12 @@ int main() {
     std::cout << "Ingrese el nombre del archivo de salida: ";
     std::cin >> outputFilename;
 
+    std::cout << "semilla: " << SEED << std::endl;
+
     std::ofstream logFile(outputFilename);
     std::ofstream eliteFile("elite_log.csv");
 
+    // INICIALIZACION DE LOS OPERADORES
     const int DIM = 2;
     const int BITS_PER_VAR = 17;
 
@@ -43,6 +46,7 @@ int main() {
     auto mutator = MutationFactory::create(MutationFactory::Type::UNIFORME, MUT_RATE);
     Universal_Estocastica susSelector;
 
+    // CREA LA POBLACION CON EL TIPO DE REPRESENTACION
     Population population(POP_SIZE, DIM * BITS_PER_VAR, Individual::Encoding::GRAY);
 
     for (int i = 0; i < population.size(); ++i) {
@@ -57,23 +61,31 @@ int main() {
     logFile << "Generación,Media,Mejor,Peor,Cruzas,Mutaciones,Mejor_FX,Variables\n";
     eliteFile << "Generación,Fx,Var1,Var2\n";
 
+    // CICLO PRINCIPAL PARA LAS GENERACIONES
     for (int gen = 1; gen <= MAX_GENERATIONS; ++gen) {
+        // MANTIENE AL ELITE
         auto elite = population.getFittest();
         Population newPopulation;
+
+        // SELECCIONA N INDIVIDUOS CON SELECCION UNIVERSAL ESTOCASTICA
         auto selected = susSelector.selectMany(population, POP_SIZE);
 
         int crosses = 0;
         int mutations = 0;
 
+        // CICLO PARA REALIZAR LAS CRUZAS Y MUTACIONES
         for (size_t i = 0; i + 1 < selected.size(); i += 2) {
+            // CRUZA UNIFORME
             auto [h1, h2] = crossover->crossover(selected[i], selected[i + 1]);
             ++crosses;
 
+            // MUTACION  UNIFORME
             mutator->mutate(h1);
             mutations++;
             mutator->mutate(h2);
             mutations++;
 
+            // EVALUACION DE LOS HIJOS
             h1->decode();
             double fx1 = DeJong::F5::evaluate(h1->getVariables());
             h1->setFitness(1.0 / (1.0 + fx1));
@@ -82,14 +94,17 @@ int main() {
             double fx2 = DeJong::F5::evaluate(h2->getVariables());
             h2->setFitness(1.0 / (1.0 + fx2));
 
+            // AGREGA A LOS HIJOS A LA NUEVA POBLACION
             newPopulation.addIndividual(h1);
             if (newPopulation.size() < POP_SIZE)
                 newPopulation.addIndividual(h2);
         }
 
+        // AGREGA AL ELITE EN LA POSICION DEL PEOR INDIVIDUO
         newPopulation.Replace(elite);
         population = newPopulation;
 
+        // ESTADISTICAS
         double avg = population.getAverageFitness();
         double min = population.getWorstFitness();
         double max = population.getFittest()->getFitness();
@@ -108,14 +123,11 @@ int main() {
 
         eliteFile << gen << "," << fxBest << "," << bestGen->getVariables()[0] << ","
                   << bestGen->getVariables()[1] << "\n";
-
-        // std::cout << "Generación " << gen << ": ";
-        // DeJong::F5::printFxWithVariables(bestGen->getVariables());
     }
 
     std::cout << "\n=== MEJOR INDIVIDUO GLOBAL ===\n";
     bestGlobal.printIndividual();
-    std::cout << "Evaluación F5 del mejor individuo global: ";
+    std::cout << "EVALUACION F5 DEL MEJOR INDIVIDUO GLOBAL: ";
     DeJong::F5::printFxWithVariables(bestGlobal.getVariables());
 
     logFile.close();
