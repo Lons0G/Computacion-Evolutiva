@@ -1,4 +1,3 @@
-
 #ifndef CROSSOVER_HPP
 #define CROSSOVER_HPP
 
@@ -34,13 +33,30 @@ class UniformCrossover : public ICrossoverOperator {
     static std::mt19937 _globalGen;
 };
 
+// ORDERED BASED CROSSOVER
+class OrderBasedCrossover : public ICrossoverOperator {
+   public:
+    explicit OrderBasedCrossover(double crossoverProb = 0.5, double crossoverGenProb = 0.5);
+
+    std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>> crossover(
+        const std::shared_ptr<Individual>& parent1,
+        const std::shared_ptr<Individual>& parent2) const override;
+
+    static void setSeed(unsigned int seed);
+
+   private:
+    double _crossoverProb;
+    double _crossoverGenProb;
+    static std::mt19937 _globalGen;
+};
+
 // PATRON FACTORY PARA CRUZA
 class CrossoverFactory {
    public:
-    enum class Type { UNIFORM };
+    enum class Type { UNIFORM, ORDER_BASED };
 
     static std::unique_ptr<ICrossoverOperator> create(Type type, double crossoverProb = 0.5,
                                                       double crossoverGenProb = 0.5);
 };
 
-#endif  // CROSSOVER_HPP
+#endif

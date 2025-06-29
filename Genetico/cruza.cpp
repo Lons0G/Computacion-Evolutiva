@@ -1,7 +1,10 @@
 #include "cruza.hpp"
 
+#include <iostream>
 #include <memory>
+#include <ostream>
 #include <stdexcept>
+#include <unordered_set>
 
 #include "individuo.hpp"
 
@@ -91,12 +94,110 @@ std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>> UniformCross
     throw std::runtime_error("SE DESCONOCE LA CODIFICACION");
 }
 
+// ORDERED BASED CROSSOVER
+std::mt19937 OrderBasedCrossover::_globalGen = std::mt19937(std::random_device{}());
+
+void OrderBasedCrossover::setSeed(unsigned int seed) { _globalGen.seed(seed); }
+
+OrderBasedCrossover::OrderBasedCrossover(double crossoverProb, double crossoverGenProb)
+    : _crossoverProb(crossoverProb), _crossoverGenProb(crossoverGenProb) {
+    if (crossoverProb < 0.0 || crossoverProb > 1.0 || crossoverGenProb < 0.0 ||
+        crossoverGenProb > 1.0) {
+        throw std::invalid_argument("PARAMETROS DE PROBABILIDADES FUERA DEL RANGO [0, 1]");
+    }
+}
+
+std::pair<std::shared_ptr<Individual>, std::shared_ptr<Individual>> OrderBasedCrossover::crossover(
+    const std::shared_ptr<Individual>& parent1, const std::shared_ptr<Individual>& parent2) const {
+    if (parent1->size() != parent2->size()) {
+        throw std::invalid_argument("NO COINCIDEN LAS LONGITUDES DE LOS CROMOSOMAS DE LOS PADRES");
+    }
+
+    Individual::Encoding enc = parent1->getEncoding();
+    if (enc != Individual::Encoding::INTEGER_DECIMAL) {
+        throw std::runtime_error("OrderBasedCrossover SOLO FUNCIONA CON REPRESENTACION ENTERA");
+    }
+
+    const auto& P1 = parent1->getDigitChromosome();
+    const auto& P2 = parent2->getDigitChromosome();
+    size_t n = P1.size();
+
+    std::uniform_real_distribution<double> distReal(0.0, 1.0);
+
+    // ============================
+    // HIJO 1
+    // ============================
+    std::vector<int> seleccionados1;
+    std::unordered_set<int> sel1;
+
+    for (size_t i = 0; i < n; ++i) {
+        if (distReal(_globalGen) < _crossoverGenProb) {
+            seleccionados1.push_back(P1[i]);
+            sel1.insert(P1[i]);
+        }
+    }
+
+    std::vector<int> child1(n, -1);  // Inicializa con -1 (huecos)
+
+    for (size_t i = 0; i < n; ++i) {
+        if (sel1.find(P2[i]) == sel1.end()) {
+            child1[i] = P2[i];
+        }
+    }
+
+    // Inserta seleccionados de P1 en huecos, de izquierda a derecha
+    size_t k1 = 0;
+    for (size_t i = 0; i < n && k1 < seleccionados1.size(); ++i) {
+        if (child1[i] == -1) {
+            child1[i] = seleccionados1[k1++];
+        }
+    }
+
+    // ============================
+    // HIJO 2
+    // ============================
+    std::vector<int> seleccionados2;
+    std::unordered_set<int> sel2;
+
+    for (size_t i = 0; i < n; ++i) {
+        if (distReal(_globalGen) < _crossoverGenProb) {
+            seleccionados2.push_back(P2[i]);
+            sel2.insert(P2[i]);
+        }
+    }
+
+    std::vector<int> child2(n, -1);
+
+    for (size_t i = 0; i < n; ++i) {
+        if (sel2.find(P1[i]) == sel2.end()) {
+            child2[i] = P1[i];
+        }
+    }
+
+    size_t k2 = 0;
+    for (size_t i = 0; i < n && k2 < seleccionados2.size(); ++i) {
+        if (child2[i] == -1) {
+            child2[i] = seleccionados2[k2++];
+        }
+    }
+
+    auto offspring1 = std::make_shared<Individual>(child1, enc);
+    auto offspring2 = std::make_shared<Individual>(child2, enc);
+
+    offspring1->setParents(parent1, parent2);
+    offspring2->setParents(parent1, parent2);
+
+    return {offspring1, offspring2};
+}
+
 // PATRON FACTORY DE LA CRUZA
 std::unique_ptr<ICrossoverOperator> CrossoverFactory::create(Type type, double crossoverProb,
                                                              double crossoverGenProb) {
     switch (type) {
         case Type::UNIFORM:
             return std::make_unique<UniformCrossover>(crossoverProb, crossoverGenProb);
+        case Type::ORDER_BASED:
+            return std::make_unique<OrderBasedCrossover>(crossoverProb, crossoverGenProb);
         default:
             throw std::invalid_argument("TIPO DE CRUZA DESCONOCIDO");
     }

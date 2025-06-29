@@ -4,7 +4,6 @@
 #include <iostream>
 #include <random>
 #include <sstream>
-#include <stdexcept>
 
 // INICIALIZACION DE VARIABLES ESTATICAS
 double Individual::min_val = 0.0;
@@ -32,14 +31,17 @@ Individual::Individual(int length, Encoding enc) : _encoding(enc) {
             }
             break;
 
-        // CASO ENTERO REAL
-        case Encoding::INTEGER_DECIMAL:
+            // CASO ENTERO
+        case Encoding::INTEGER_DECIMAL: {
             _digitChromosome.resize(length);
-            for (int& digit : _digitChromosome) {
-                digit = std::uniform_int_distribution<>(0, 9)(_globalGen);
+            for (int i = 0; i < length; ++i) {
+                _digitChromosome[i] = i;
             }
+            std::shuffle(_digitChromosome.begin(), _digitChromosome.end(), _globalGen);
             break;
+        }
     }
+
     decode();
 }
 
@@ -99,20 +101,11 @@ void Individual::decode() {
             break;
         }
 
+        // REPRESENTACION ENTERA NO SE CODIFICA
         case Encoding::INTEGER_DECIMAL: {
-            int digits_per_var = _digitChromosome.size() / num_vars;
-            // CONCATENACION DE LOS ENTEROS
-            for (int i = 0; i < num_vars; ++i) {
-                std::ostringstream oss;
-                for (int j = 0; j < digits_per_var; ++j) {
-                    oss << _digitChromosome[i * digits_per_var + j];
-                }
-                // CONVIERTE DE ENTERO A REAL
-                std::string segment = oss.str();
-                long long intValue = std::stoll(segment);
-                double normalized = static_cast<double>(intValue) / std::pow(10, digits_per_var);
-                double value = min_val + (max_val - min_val) * normalized;
-                _variables.push_back(value);
+            _variables.clear();
+            for (int val : _digitChromosome) {
+                _variables.push_back(static_cast<double>(val));
             }
             break;
         }
