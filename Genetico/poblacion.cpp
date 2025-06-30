@@ -23,6 +23,7 @@ std::shared_ptr<Individual> Population::getIndividual(int index) const {
 const std::vector<std::shared_ptr<Individual>>& Population::getIndividuals() const {
     return _individuos;
 }
+std::vector<std::shared_ptr<Individual>>& Population::getIndividuals() { return _individuos; }
 
 // OBTENER EL MEJOR FITNESS
 std::shared_ptr<Individual> Population::getFittest() const {
@@ -95,6 +96,7 @@ void Population::Replace(std::shared_ptr<Individual> elite) {
 
     *minIt = elite;
 }
+
 // PRINT
 void Population::printPopulation(const std::string& title) const {
     std::cout << "\n=== " << title << " (" << _individuos.size() << " individuos) ===\n";

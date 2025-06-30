@@ -97,6 +97,31 @@ std::vector<std::shared_ptr<Individual>> Universal_Estocastica::selectMany(
     return selected;
 }
 
+// TORNEO DETERMINISTICO
+std::vector<std::shared_ptr<Individual>> Torneo_Binario_Deterministico::selectMany(
+    const Population& population, int numToSelect) const {
+    if (population.size() < 2) {
+        throw std::runtime_error("La población es demasiado pequeña para torneo binario.");
+    }
+
+    std::vector<std::shared_ptr<Individual>> selected;
+
+    while (static_cast<int>(selected.size()) < numToSelect) {
+        std::vector<std::shared_ptr<Individual>> shuffled = population.getIndividuals();
+        std::shuffle(shuffled.begin(), shuffled.end(), _gen);
+
+        for (size_t i = 0;
+             i + 1 < shuffled.size() && static_cast<int>(selected.size()) < numToSelect; i += 2) {
+            auto& ind1 = shuffled[i];
+            auto& ind2 = shuffled[i + 1];
+            auto winner = (ind1->getFitness() >= ind2->getFitness()) ? ind1 : ind2;
+            selected.push_back(winner);
+        }
+    }
+
+    return selected;
+}
+
 // SELECCION DE ESTRATEGIA
 std::unique_ptr<ISelectionStrategy> SelectionFactory::create(Type type, int tournamentSize) {
     switch (type) {

@@ -1,4 +1,3 @@
-
 #ifndef SELECTION_HPP
 #define SELECTION_HPP
 
@@ -45,10 +44,19 @@ class Universal_Estocastica {
     mutable std::mt19937 _gen{std::random_device{}()};
 };
 
+class Torneo_Binario_Deterministico {
+   public:
+    std::vector<std::shared_ptr<Individual>> selectMany(const Population& population,
+                                                        int numToSelect) const;
+
+   private:
+    mutable std::mt19937 _gen{std::random_device{}()};
+};
+
 // Factory para crear estrategias de selección
 class SelectionFactory {
    public:
-    enum class Type { RULETA, TORNEO, UNIVERSAL_ESTOCASTICA };
+    enum class Type { RULETA, TORNEO, UNIVERSAL_ESTOCASTICA, TORNEO_BINARIO_DETERMINISTICO };
 
     static std::unique_ptr<ISelectionStrategy> create(Type type, int tournamentSize = 3);
 };

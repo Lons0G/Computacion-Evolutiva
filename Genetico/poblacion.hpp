@@ -19,6 +19,7 @@ class Population {
     // OBTENCION
     std::shared_ptr<Individual> getIndividual(int index) const;
     const std::vector<std::shared_ptr<Individual>>& getIndividuals() const;
+    std::vector<std::shared_ptr<Individual>>& getIndividuals();
     std::shared_ptr<Individual> getFittest() const;
 
     // ACTUALIZACION

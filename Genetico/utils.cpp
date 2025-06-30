@@ -7,6 +7,17 @@
 
 #include "mutacion.hpp"
 
+namespace Dummy {
+double evaluate(const std::vector<int>& chromo) {
+    // Ejemplo: suma simple de elementos, solo para ver diferencias
+    double sum = 0.0;
+    for (int val : chromo) {
+        sum += val;
+    }
+    return sum;
+}
+}  // namespace Dummy
+
 namespace Utils {
 
 std::string chromosomeToString(const std::vector<int>& chromo) {
@@ -51,7 +62,7 @@ void applyInversion(std::shared_ptr<Individual> individual, double inversionRate
                     int value2, InversionPolicy policy) {
     static std::mt19937 gen(std::random_device{}());
     std::uniform_real_distribution<double> probDist(0.0, 1.0);
-    std::uniform_real_distribution<double> coin(0.0, 1.0);
+    std::uniform_real_distribution<double> dist(0.0, 1.0);
 
     if (probDist(gen) >= inversionRate) {
         // No se aplica inversión
@@ -68,6 +79,7 @@ void applyInversion(std::shared_ptr<Individual> individual, double inversionRate
     // Evalúa fitness nuevo
     // Usa tu función evaluadora real aquí. Ejemplo con De Jong:
     Individual temp(newChromo, individual->getEncoding());
+    temp.decode();
     double originalFitness = individual->getFitness();
     double newFitness = 0.0;
     switch (policy) {
@@ -84,7 +96,7 @@ void applyInversion(std::shared_ptr<Individual> individual, double inversionRate
             break;
 
         case InversionPolicy::RANDOM_CHOICE:
-            if (coin(gen) < 0.5) {
+            if (dist(gen) < 0.5) {
                 individual->setDigitChromosome(newChromo);
                 individual->setFitness(newFitness);
             }
