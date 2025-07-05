@@ -1,0 +1,6 @@
+Manejar restricciones donde se modifique el valor de la mutacion
+
+Si el fitness esta muy lejos del valor de fitness valido, se incrementa la mutacion
+Si el fitness esta cerca del valor de fitness valido, se incrementea un poco la mutacion
+
+Si esta dentro de las restricciones, se mantiene la mutacion.
