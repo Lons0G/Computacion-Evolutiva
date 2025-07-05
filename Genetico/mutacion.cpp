@@ -61,6 +61,7 @@ InsertionMutation::InsertionMutation(double mutationRate) : _mutationRate(mutati
     }
 }
 
+// MUTACION POR INSERCION
 void InsertionMutation::mutate(std::shared_ptr<Individual> individual) const {
     std::uniform_real_distribution<double> probDist(0.0, 1.0);
 

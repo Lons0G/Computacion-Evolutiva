@@ -108,7 +108,7 @@ int main() {
     // CICLO
     int gen = 1;
     while (gen < MAX_GENERATIONS) {
-        // std::cout << "\n=== GENERACION " << gen << " ===" << std::endl;
+        std::cout << "\n=== GENERACION " << gen << " ===" << std::endl;
 
         // OBTENER EL MEJOR INDIVIDUO DE LA GENERACION
         auto elite = population.getFittest();
@@ -193,16 +193,16 @@ int main() {
         eliteFile << "\n";
 
         // IMPRIMIR ESTADISTICAS EN PANTALLA
-        // std::cout << "Media aptitud: " << avg << "\n";
-        // std::cout << "Máxima aptitud: " << max << "\n";
-        // std::cout << "Mínima aptitud: " << min << "\n";
-        // std::cout << "Cruzas: " << crosses << ", Mutaciones: " << mutations
-        //          << ", Inversiones: " << inversions << "\n";
+        std::cout << "Media aptitud: " << avg << "\n";
+        std::cout << "Máxima aptitud: " << max << "\n";
+        std::cout << "Mínima aptitud: " << min << "\n";
+        std::cout << "Cruzas: " << crosses << ", Mutaciones: " << mutations
+                  << ", Inversiones: " << inversions << "\n";
 
-        //// IMPRESION DEL MEJOR INDIVIDUO DE LA GENERACION
-        // std::cout << "|--- MEJOR INDIVIDUO DE LA GENERACION " << gen << " ---|" << std::endl;
-        // bestGen->printIndividual();
-        // std::cout << "COSTO : " << bestCost << std::endl;
+        // IMPRESION DEL MEJOR INDIVIDUO DE LA GENERACION
+        std::cout << "|--- MEJOR INDIVIDUO DE LA GENERACION " << gen << " ---|" << std::endl;
+        bestGen->printIndividual();
+        std::cout << "COSTO : " << bestCost << std::endl;
 
         // REMPLAZO DE LA GENERACION
         population = newPop;

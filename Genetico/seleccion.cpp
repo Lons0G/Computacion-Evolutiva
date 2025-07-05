@@ -101,24 +101,33 @@ std::vector<std::shared_ptr<Individual>> Universal_Estocastica::selectMany(
 std::vector<std::shared_ptr<Individual>> Torneo_Binario_Deterministico::selectMany(
     const Population& population, int numToSelect) const {
     if (population.size() < 2) {
-        throw std::runtime_error("La población es demasiado pequeña para torneo binario.");
+        throw std::runtime_error("ERROR DE TAMANIO DE POBLACION.");
     }
 
+    // LISTA DE LOS INDIVIDUOS A SELECCIONAR
     std::vector<std::shared_ptr<Individual>> selected;
 
+    // CICLO DE SELECCIONAR N INDIVIDUOS
     while (static_cast<int>(selected.size()) < numToSelect) {
+        // OBTENER LA POBLACION Y REVOLVERLO CON SHUFFLE
         std::vector<std::shared_ptr<Individual>> shuffled = population.getIndividuals();
         std::shuffle(shuffled.begin(), shuffled.end(), _gen);
 
+        // BUCLE PARA SELECCIONAR EN PARES A LOS INDIVIDUOS
         for (size_t i = 0;
              i + 1 < shuffled.size() && static_cast<int>(selected.size()) < numToSelect; i += 2) {
+            // OBTENER DOS INDIVIDUOS
             auto& ind1 = shuffled[i];
             auto& ind2 = shuffled[i + 1];
+
+            // COMPARAR INDIVIDUOS
             auto winner = (ind1->getFitness() >= ind2->getFitness()) ? ind1 : ind2;
+            // AGREGAR GANADOR
             selected.push_back(winner);
         }
     }
 
+    // RETORNAR LISTA DE SELECCIONADOS
     return selected;
 }
 
